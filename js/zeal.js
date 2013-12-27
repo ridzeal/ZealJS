@@ -6,12 +6,12 @@
 * it under the terms of the GNU General Public License as published by
 * the Free Software Foundation, either version 3 of the License, or
 * any later version.
-* 
+*
 * This program is distributed in the hope that it will be useful,
 * but WITHOUT ANY WARRANTY; without even the implied warranty of
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 * GNU General Public License for more details.
-* 
+*
 * You should have received a copy of the GNU General Public License
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -19,32 +19,134 @@ if (!jQuery) { throw new Error("jQuery required") }
 
 function Zeal() {
 	// private property
-	var version = '1.0',
+	var version = '0.1.1',
 		author = {
 			nick: 'Rid Zeal',
 			twitter: '@ridzeal'
-		};
-	
+		},
+		zeal = this;
+		
 	// public property
 	this.cols = {};
 	
-	// Getter
-	this.getVersion = function() {
-		return version;
-	};
-	
-	this.getInfo = function(attr) {
-		switch(attr) {
-			case 'version':
-				return version; break;
-			case 'author':
-				return author.nick; break;
-			default:
-				return null;
+	/**
+	 * ZealJS Getter
+	 */
+	this.get = {
+		// Get Version of ZealJS
+		Version: function() {
+			return version;
+		},
+		
+		// Get ZealJS Information by attribute
+		Info: function(attr) {
+			switch(attr) {
+				case 'version':
+					return version;
+				case 'author':
+					return author.nick;
+				default:
+					return null;
+			}
 		}
 	};
 	
-	/** 
+	/**
+	 * ZealJS Generator Module
+	 */
+	this.gen = {
+		/** Sub-Module Table */
+		table: {
+			/**
+			 * crud
+			 * Create Table with CRUD functionality
+			 * @param	id		string	Table ID
+			 * @param	crud	object	CRUD URL
+			 * crud: {
+			 *		create: <link>,
+			 *		read: <link>,
+			 *		update: <link>,
+			 *		delete: <link>
+			 * }
+			 */
+			master: function(id, crud) {
+				if (!crud["create"]
+					||!crud["read"]
+					||!crud["update"]
+					||!crud["delete"]) {
+					return false;
+				} else {
+					return "";
+				}
+			}
+		},
+		
+		/** Sub-Module Form Element */
+		element: {
+			/**
+			 * text
+			 * Create Text Element
+			 * @param	string	id		Element ID
+			 * @param	string	config	Config for creating text
+			 */
+			text: function(id, config) {
+				if (!config) config = {};
+				var el = $("<input>");
+				el.attr("id", id);
+				el.attr("type", "text");
+				el.addClass("z-form-element");
+				(config.name) ? el.attr("name", config.name): el.attr("name", id);
+				if (config.placeholder) {
+				    el.attr("placeholder",config.placeholder);
+				}
+				
+				// Additional Attributes
+				if (config.attributes) {
+				    for(i in config.attributes) {
+						el.attr(i,config.attributes[i]);
+					}
+				}
+				
+				return el;
+			},
+			
+			/**
+			 * select
+			 * Create Select Element
+			 * @param	string			id			Element ID
+			 * @param	array/object	optValue	Options Value
+			 * @param	string			config		Config for creating text
+			 * optValue = {<text> : <value>}
+			 */
+			select: function(id, optValue, config) {
+				if (!config) config = {};
+				var el = $("<select></select");
+				el.attr("id", id);
+				el.attr("type", "text");
+				el.addClass("z-form-element");
+				(config.name) ? el.attr("name", config.name): el.attr("name", id);
+				
+				// Insert Options
+				for(i in optValue) {
+					var opt = $("<option></option>");
+					opt.attr("value",i);
+					opt.html(optValue[i]);
+					el.append(opt);
+				}
+				
+				// Additional Attributes
+				if (config.attributes) {
+				    for(i in config.attributes) {
+						el.attr(i,config.attributes[i]);
+					}
+				}
+				
+				return el;
+			}
+		}
+	};
+	
+	/**
 	 * makeTableRes
 	 * Make a table become Zeal Version responsive
 	 */
@@ -55,14 +157,14 @@ function Zeal() {
 			newTableId = table.attr("id")+"Clone",
 			tableHeadTd = $("#"+tableId+">thead >tr >td"),
 			tableBodyTr = $("#"+tableId+">tbody >tr");
-		
+
 		// Columns Pool
 		tableHeadTd.each(function(i){
 			$(this).attr('colnum',i);
 			cls.cols[i] = $(this);
 			optVal[i] = $(this).html();
 		});
-		
+
 		// Assign Content Column Info
 		tableBodyTr.each(function(i){
 			$(this).attr('rownum',i);
@@ -70,15 +172,15 @@ function Zeal() {
 				$(this).attr('colnum',j);
 			});
 		});
-		
+
 		// Create Table Duplicate
 		newTable = table.clone().insertAfter(table);
 		newTable.attr('id', newTableId);
-		
+
 		// Assign Class
 		newTable.addClass("sm-dev-only");
 		table.addClass("sm-dev-hide");
-		
+
 		// Remove Table Duplicate Columns greater than 2
 		for(var i=0;i<tableHeadTd.length;i++) {
 			var cell = $("#"+newTableId+" [colnum="+i+"]");
@@ -89,13 +191,13 @@ function Zeal() {
 				cell.attr("class","col-50");
 			}
 		}
-		
+
 		// Replace Table Duplicate Header with select element
 		this.inner2select(newTableId+"Col1", newTableId+"Col1Select"
 			, optVal, 0);
 		this.inner2select(newTableId+"Col2", newTableId+"Col2Select"
 			, optVal, 1);
-		
+
 		// Column Changer
 		$("#"+newTableId+"Col1Select").change(function() {
 			cls.changeCol($(this).val(), 0, tableId, newTableId);
@@ -105,7 +207,7 @@ function Zeal() {
 		});
 	};
 	
-	/** 
+	/**
 	 * inner2select
 	 * Replace innerHTML with select element
 	 * @param	divId		string		Element which inner tobe replaced
@@ -119,10 +221,10 @@ function Zeal() {
 		selectEl.attr("id", selectId);
 		
 		// Fill Options
-		$.each(optValue, function(key, value) {   
+		$.each(optValue, function(key, value) {
 			selectEl
 				.append($('<option>', { value : key })
-				.text(value)); 
+				.text(value));
 		});
 		
 		// Select Value
@@ -132,7 +234,7 @@ function Zeal() {
 		$("#"+divId).html(selectEl);
 	};
 	
-	/** 
+	/**
 	 * changeCol
 	 * Change Column content
 	 * @param	colNum		int		Column Number that will be extract
@@ -150,9 +252,307 @@ function Zeal() {
 			srcHtml[i] = $(this).html();
 		});
 		
+		// Replace Content
 		colTarget.each(function(i) {
 			$(this).html(srcHtml[i]);
 		});
+	};
+	
+	/**
+	 * ZealJS Enterprise Application Module
+	 */
+	this.erp = {
+		/**
+		 * Sub Module Master
+		 */
+		master: {
+			/**
+			 * defaultConfig
+			 * Default Config for creating master, mainly for example purposes
+			 */
+			defaultConfig: function() {
+				var config = {};
+				config.cols = [
+					{
+						// Element Text
+						display: "Column1", // Display Name in Col Table and Element Label
+						dbName: "COL1", // Column Name in database
+						table: { // Table setting
+							width: 1,
+							align: "left"
+						},
+						element: { // Element Setting
+							type: "text",
+							placeholder: "Type random text"
+						},
+						option: { // Optional Setting
+							//update as needed
+						}
+					},{
+						// Element Select
+						display: "Column2",
+						dbName: "COL1",
+						table: {
+							width: 1,
+							align: "left"
+						},
+						element: {
+							type: "select",
+							placeholder: "Type random text",
+							options: {
+								0: "False",
+								1: "True"
+							}
+						}
+					}
+				];
+				return config;
+			},
+			
+			/**
+			 * create
+			 * Create New complete setup master program
+			 * @param	appendTo	string		Container ID
+			 * @param	id			string		ID for setup master
+			 * @param	config		object		Config for create new master
+			 * config.cols = {
+			 *		display: 	// Display Name in Column Table and Element Label
+			 *		dbName: 	// Column Name in database
+			 *		table: {	// Table Setting
+			 *			width:
+			 *			align:
+			 *		}
+			 *		element: {	// Element Form and Filter Setting
+			 *			type:
+			 *			placeholder:
+			 *		}
+			 *		option: {	// Additional Options
+			 *			
+			 *		}
+			 * }
+			 */
+			create: function(appendTo, id, config) {
+				// Set Default Config, some for example purpose
+				if ($.isEmptyObject(config) || !config)
+					config = this.defaultConfig();
+				
+				// Private Variable
+				var cont = $("#"+appendTo),
+					obj = $("<div></div>").attr("id",id+"Placeholder"),
+					divTab = $("<div></div>").attr("id",id+"TabNav"),
+					divFilter = $("<div></div>").attr("id",id+"DivFilter"),
+					divTable = $("<div></div>").attr("id",id+"DivTable"),
+					divForm = $("<div></div>").attr("id",id+"DivForm");
+				
+				// Setting Placeholder Class
+				obj.addClass("z-master-placeholder");
+				divTab.addClass("z-master-tabnav");
+				divFilter.addClass("z-master-tab");
+				divFilter.addClass("active");
+				divTable.addClass("z-master-tab");
+				divForm.addClass("z-master-tab");
+				
+				// Append to Placeholder
+				obj.append(divTab);
+				obj.append($("<div></div>")
+						   .addClass("z-master-tabcontent")
+						   .append(divFilter)
+						   .append(divTable)
+						   .append(divForm));
+				
+				/** Tab Navigation */
+				var tabContent = $("<div></div>")
+					.append($("<span></span>")
+							.append($("<a></a>")
+									.attr("id",id+"FilterLink")
+									.attr("content",id+"DivFilter")
+									.html("Filter")
+									.addClass("tab-link")
+									.addClass("active")))
+					.append($("<span></span>")
+							.append($("<a></a>")
+									.attr("id",id+"TableLink")
+									.attr("content",id+"DivTable")
+									.html("Table")
+									.addClass("tab-link")))
+					.append($("<span></span>")
+							.append($("<a></a>")
+									.attr("id",id+"FormLink")
+									.attr("content",id+"DivForm")
+									.html("Form")
+									.addClass("tab-link")));
+				divTab.append(tabContent);
+				
+				/** Filter */
+				divFilter.append(this.createFilter(id, config));
+				
+				/** Table */
+				divTable.append(this.createTable);
+				
+				/** Form */
+				divForm.append(this.createForm(id, config));
+				
+				// Append Placeholder to Container
+				cont.append(obj);
+				
+				// Assign All Link
+				this.assignLink(id);
+			},
+			
+			/**
+			 * assignLink
+			 * Assign Link Action for all link and button
+			 * @param	id			string		ID for setup master
+			 */
+			assignLink: function(id) {
+				// Tab Navigation
+				$(".tab-link").click(function() {
+					$(".tab-link").removeClass("active");
+					$(this).addClass("active");
+					$(".z-master-tab").removeClass("active");
+					$("#"+$(this).attr("content")).addClass("active");
+				});
+			},
+			
+			/**
+			 * createFilter
+			 * Create Setup Master Filter Form
+			 * @param	id			string		ID for setup master
+			 * @param	config		object		Config for create new master
+			 */
+			createFilter: function(id, config) {
+				if (!config) config = {};
+				var form = $("<form></form>");
+				
+				// Form Attribute
+				form.attr("id",id+"FilterForm");
+				form.addClass("z-form");
+				
+				/** Create Elements */
+				for(i in config.cols) {
+					var col = config.cols[i],
+						label = $("<label></label>"),
+						el, elId, elConfig = {};
+					if (col.dbName) {
+					    elId = id+"Filter"+col.dbName;
+					} else {
+						elId = id+"Filter"+i;
+					}
+					
+					// Prepare Element Config
+					if (col.element.placeholder) {
+					    elConfig.placeholder = col.element.placeholder;
+					}
+					
+					// Switch-Case Element
+					switch(col.element.type) {
+						case 'select':
+							el = zeal.gen.element.select(elId,
+														 col.element.options,
+														 elConfig);
+							break;
+						case 'text':
+						default:
+							el = zeal.gen.element.text(elId, elConfig);
+					}
+					
+					// Prepare Label
+					if (col.display) {
+					    label.html(col.display);
+					}
+					label.attr("for",elId);
+					
+					// Append to Form
+					form.append($("<div></div>")
+								.append(label)
+								.append(el));
+				}
+				
+				return form;
+			},
+			
+			/**
+			 * createTable
+			 * Create Setup Master Table
+			 * @param	id			string		ID for setup master
+			 */
+			createTable: function(id) {
+				
+			},
+			
+			/**
+			 * createForm
+			 * Create Setup Master CRUD Manipulation Form
+			 * @param	id			string		ID for setup master
+			 * @param	config		object		Config for create new master
+			 */
+			createForm: function(id, config) {
+				if (!config) config = {};
+				var form = $("<form></form>");
+				
+				// Form Attribute
+				form.attr("id",id+"CrudForm");
+				form.addClass("z-form");
+				
+				for(i in config.cols) {
+					var col = config.cols[i],
+						label = $("<label></label>"),
+						el, elId, elConfig = {};
+					if (col.dbName) {
+					    elId = id+"Crud"+col.dbName;
+					} else {
+						elId = id+"Crud"+i;
+					}
+					
+					// Prepare Element Config
+					if (col.element.placeholder) {
+					    elConfig.placeholder = col.element.placeholder;
+					}
+					
+					// Disable Element
+					elConfig.attributes = {disabled:true};
+					
+					// Switch-Case Element
+					switch(col.element.type) {
+						case 'select':
+							el = zeal.gen.element.select(elId,
+														 col.element.options,
+														 elConfig);
+							break;
+						case 'text':
+						default:
+							el = zeal.gen.element.text(elId, elConfig);
+					}
+					
+					// Prepare Label
+					if (col.display) {
+					    label.html(col.display);
+					}
+					label.attr("for",elId);
+					
+					// Append to Form
+					form.append($("<div></div>")
+								.append(label)
+								.append(el));
+				}
+				
+				return form;
+			}
+		},
+		
+		/**
+		 * Sub Module Transaction
+		 */
+		transaction: {
+			
+		},
+		
+		/**
+		 * Sub Module Report
+		 */
+		report: {
+			
+		}
 	};
 };
 
