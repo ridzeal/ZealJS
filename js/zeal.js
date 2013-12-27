@@ -61,6 +61,7 @@ function Zeal() {
 			 * crud
 			 * Create Table with CRUD functionality
 			 * @param	id		string	Table ID
+			 * @param	cols	object	Columns Setting
 			 * @param	crud	object	CRUD URL
 			 * crud: {
 			 *		create: <link>,
@@ -69,14 +70,45 @@ function Zeal() {
 			 *		delete: <link>
 			 * }
 			 */
-			master: function(id, crud) {
-				if (!crud["create"]
-					||!crud["read"]
-					||!crud["update"]
-					||!crud["delete"]) {
+			master: function(id, cols, crud) {
+				if (!crud
+					&&!crud["create"]
+					&&!crud["read"]
+					&&!crud["update"]
+					&&!crud["delete"]) {
 					return false;
 				} else {
-					return "";
+					var table = $("<table></table>"),
+						thead = $("<thead></thead>"),
+						tbody = $("<tbody></tbody>"),
+						tableId = id+"Table",
+						addBtn = $("<button></button>");
+					
+					// Table Attribute
+					table.attr("id",tableId);
+					table.addClass("z-table");
+					
+					// Prepare Add Button
+					addBtn.html("Add")
+						.addClass("z-button");
+					
+					// Table header
+					var trHead = $("<tr></tr>");
+					table.append(trHead);
+					for(i in cols) {
+						trHead.append($("<td></td>")
+									  .attr("id",tableId+i)
+									  .html(cols[i].display));
+					}
+					trHead.append($("<td></td>")
+								  .append(addBtn)
+								  .addClass("col-10"));
+					
+					// Table Content
+					table.append(thead);
+					table.append(tbody);
+					
+					return table;
 				}
 			}
 		},
@@ -272,8 +304,8 @@ function Zeal() {
 			 */
 			defaultConfig: function() {
 				var config = {};
-				config.cols = [
-					{
+				config.cols = {
+					'col1': {
 						// Element Text
 						display: "Column1", // Display Name in Col Table and Element Label
 						dbName: "COL1", // Column Name in database
@@ -288,7 +320,8 @@ function Zeal() {
 						option: { // Optional Setting
 							//update as needed
 						}
-					},{
+					},
+					'col2': {
 						// Element Select
 						display: "Column2",
 						dbName: "COL1",
@@ -300,12 +333,18 @@ function Zeal() {
 							type: "select",
 							placeholder: "Type random text",
 							options: {
-								0: "False",
-								1: "True"
+								'false': "False",
+								'true': "True"
 							}
 						}
 					}
-				];
+				};
+				config.crud = {
+					create: "",
+					read: "",
+					update: "",
+					delete: ""
+				}
 				return config;
 			},
 			
@@ -315,6 +354,12 @@ function Zeal() {
 			 * @param	appendTo	string		Container ID
 			 * @param	id			string		ID for setup master
 			 * @param	config		object		Config for create new master
+			 * config.crud {
+			 *		create: <url>,
+			 *		read: <url>,
+			 *		update: <url>,
+			 *		delete: <url>
+			 * }
 			 * config.cols = {
 			 *		display: 	// Display Name in Column Table and Element Label
 			 *		dbName: 	// Column Name in database
@@ -387,7 +432,7 @@ function Zeal() {
 				divFilter.append(this.createFilter(id, config));
 				
 				/** Table */
-				divTable.append(this.createTable);
+				divTable.append(this.createTable(id, config));
 				
 				/** Form */
 				divForm.append(this.createForm(id, config));
@@ -422,11 +467,17 @@ function Zeal() {
 			 */
 			createFilter: function(id, config) {
 				if (!config) config = {};
-				var form = $("<form></form>");
+				var form = $("<form></form>"),
+					btn = $("<button></button>");
 				
 				// Form Attribute
 				form.attr("id",id+"FilterForm");
 				form.addClass("z-form");
+				
+				// Prepare Filter Button
+				btn.attr("id",id+"FilterBtn");
+				btn.html("Filter Data");
+				btn.addClass("z-button");
 				
 				/** Create Elements */
 				for(i in config.cols) {
@@ -447,9 +498,12 @@ function Zeal() {
 					// Switch-Case Element
 					switch(col.element.type) {
 						case 'select':
-							el = zeal.gen.element.select(elId,
-														 col.element.options,
-														 elConfig);
+							var tmpOpt = {};
+							tmpOpt['none'] = 'All';
+							for(i in col.element.options) {
+								tmpOpt[i] = col.element.options[i];
+							}
+							el = zeal.gen.element.select(elId, tmpOpt, elConfig);
 							break;
 						case 'text':
 						default:
@@ -467,6 +521,7 @@ function Zeal() {
 								.append(label)
 								.append(el));
 				}
+				form.append(btn);
 				
 				return form;
 			},
@@ -475,9 +530,10 @@ function Zeal() {
 			 * createTable
 			 * Create Setup Master Table
 			 * @param	id			string		ID for setup master
+			 * @param	config		object		Config for create new master
 			 */
-			createTable: function(id) {
-				
+			createTable: function(id, config) {
+				return zeal.gen.table.master(id, config.cols, config.crud);
 			},
 			
 			/**
@@ -488,11 +544,18 @@ function Zeal() {
 			 */
 			createForm: function(id, config) {
 				if (!config) config = {};
-				var form = $("<form></form>");
+				var form = $("<form></form>"),
+					btn = $("<button></button>");
 				
 				// Form Attribute
 				form.attr("id",id+"CrudForm");
 				form.addClass("z-form");
+				
+				// Prepare Filter Button
+				btn.attr("id",id+"CrudBtn");
+				btn.attr("disabled",true);
+				btn.html("Update");
+				btn.addClass("z-button");
 				
 				for(i in config.cols) {
 					var col = config.cols[i],
@@ -535,6 +598,7 @@ function Zeal() {
 								.append(label)
 								.append(el));
 				}
+				form.append(btn);
 				
 				return form;
 			}
