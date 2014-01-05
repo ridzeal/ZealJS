@@ -1,5 +1,5 @@
 /**
-* ZealJS v0.1.0 by @ridzeal
+* ZealJS v0.1.1 by @ridzeal
 * Copyright 2013 Zeal Cross Team
 *
 * This program is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ function Zeal() {
 			nick: 'Rid Zeal',
 			twitter: '@ridzeal'
 		},
-		zeal = this;
+		zeal = this; // Point to root
 		
 	// public property
 	this.cols = {};
@@ -87,6 +87,8 @@ function Zeal() {
 					// Table Attribute
 					table.attr("id",tableId);
 					table.addClass("z-table");
+					thead.attr("id",tableId+"Head");
+					tbody.attr("id",tableId+"Body");
 					
 					// Prepare Add Button
 					addBtn.html("Add")
@@ -94,7 +96,7 @@ function Zeal() {
 					
 					// Table header
 					var trHead = $("<tr></tr>");
-					table.append(trHead);
+					thead.append(trHead);
 					for(i in cols) {
 						trHead.append($("<td></td>")
 									  .attr("id",tableId+i)
@@ -299,10 +301,10 @@ function Zeal() {
 		 */
 		master: {
 			/**
-			 * defaultConfig
+			 * exConfig
 			 * Default Config for creating master, mainly for example purposes
 			 */
-			defaultConfig: function() {
+			exConfig: function() {
 				var config = {};
 				config.cols = {
 					'col1': {
@@ -379,7 +381,7 @@ function Zeal() {
 			create: function(appendTo, id, config) {
 				// Set Default Config, some for example purpose
 				if ($.isEmptyObject(config) || !config)
-					config = this.defaultConfig();
+					config = this.exConfig();
 				
 				// Private Variable
 				var cont = $("#"+appendTo),
@@ -545,26 +547,35 @@ function Zeal() {
 			createForm: function(id, config) {
 				if (!config) config = {};
 				var form = $("<form></form>"),
-					btn = $("<button></button>");
+					btn = $("<button></button>"),
+					mode = $("<span></span>"),
+					formId = id+"CrudForm";
 				
 				// Form Attribute
-				form.attr("id",id+"CrudForm");
+				form.attr("id",formId);
 				form.addClass("z-form");
 				
 				// Prepare Filter Button
-				btn.attr("id",id+"CrudBtn");
+				btn.attr("id",formId+"Btn");
 				btn.attr("disabled",true);
 				btn.html("Update");
 				btn.addClass("z-button");
 				
+				// Prepare Label Mode
+				mode.attr("id",formId+"Mode");
+				mode.html("View Mode");
+				mode.addClass("z-label");
+				
+				form.append($("<div></div>")
+							.append(mode)
+							.css("text-align","right"));
 				for(i in config.cols) {
 					var col = config.cols[i],
 						label = $("<label></label>"),
-						el, elId, elConfig = {};
+						el, elConfig = {},
+						elId = formId+"Crud"+i;
 					if (col.dbName) {
-					    elId = id+"Crud"+col.dbName;
-					} else {
-						elId = id+"Crud"+i;
+					    elId = formId+col.dbName;
 					}
 					
 					// Prepare Element Config
@@ -573,7 +584,10 @@ function Zeal() {
 					}
 					
 					// Disable Element
-					elConfig.attributes = {disabled:true};
+					elConfig.attributes = {
+						class: "z-form-element",
+						disabled: true
+					};
 					
 					// Switch-Case Element
 					switch(col.element.type) {
@@ -601,6 +615,56 @@ function Zeal() {
 				form.append(btn);
 				
 				return form;
+			},
+			
+			/**
+			 * formState
+			 * Change Form State
+			 */
+			formState: {
+				/**
+				 * read
+				 * Change Form to Read Only Mode
+				 * @param	string	formId	Form ID
+				 */
+				read: function(formId) {
+					$("#"+formId+"Mode").html("View Mode");
+				},
+				/**
+				 * create
+				 * Change Form to Create Mode
+				 * @param	string	formId	Form ID
+				 */
+				create: function(formId) {
+					$("#"+formId+"Mode").html("Create Mode");
+				},
+				/**
+				 * update
+				 * Change Form to Update Mode
+				 * @param	string	formId	Form ID
+				 */
+				update: function(formId) {
+					$("#"+formId+"Mode").html("Update Mode");
+				}
+			},
+			
+			/**
+			 * crud
+			 * CRUD Process
+			 */
+			crud: {
+				/**
+				 * create
+				 * Post to server to create new data
+				 * @param	
+				 */
+				create: function(formId, url) {
+					var formData = $("#"+formId).serialize();
+					$.post(url, formData)
+					.done(function( data ) {
+						alert( "Data Loaded: " + data );
+					});
+				}
 			}
 		},
 		

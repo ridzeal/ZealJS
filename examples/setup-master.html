@@ -1,0 +1,60 @@
+<html>
+	<head>
+		<title>Zeal JS</title>
+		<script type="text/javascript" src="../js/jquery-2.0.3.min.js"></script>
+		<script type="text/javascript" src="../js/zeal.js"></script>
+		<link rel="stylesheet" type="text/css" href="../css/zeal.css">
+	</head>
+	<body>
+		<div id="masterCont" style="max-width:500px">
+        </div>
+		
+		<script>
+            var config = {
+                cols: {
+					'col1': {
+						// Element Text
+						display: "Column1", // Display Name in Col Table and Element Label
+						dbName: "COL1", // Column Name in database
+						table: { // Table setting
+							width: 1,
+							align: "left"
+						},
+						element: { // Element Setting
+							type: "text",
+							placeholder: "Type random text"
+						},
+						option: { // Optional Setting
+							//update as needed
+						}
+					},
+					'col2': {
+						// Element Select
+						display: "Column2",
+						dbName: "COL1",
+						table: {
+							width: 1,
+							align: "left"
+						},
+						element: {
+							type: "select",
+							placeholder: "Type random text",
+							options: {
+								'false': "False",
+								'true': "True"
+							}
+						}
+					}
+				},
+                
+                crud: {
+					create: "",
+					read: "",
+					update: "",
+					delete: ""
+				}
+            };
+            z.erp.master.create('masterCont',"masterExample", config);
+		</script>
+	</body>
+</html>

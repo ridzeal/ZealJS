@@ -6,6 +6,15 @@ clear-fix {
 	clear: both;
 }
 
+.z-label {
+	font-size: 12px;
+	background-color: azure;
+	padding: 0.4em;
+	border-radius: 10px;
+	color: #00bdf4;
+	border: 1px solid #d5f8ff;
+}
+
 /**
  * Z-Button
  */
