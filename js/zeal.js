@@ -662,7 +662,43 @@ function Zeal() {
 					var formData = $("#"+formId).serialize();
 					$.post(url, formData)
 					.done(function( data ) {
+						alert( "Data Inserted: " + data );
+					});
+				},
+                /**
+				 * read
+				 * Post to server to create new data
+				 * @param	
+				 */
+				read: function(formId, url) {
+					var formData = $("#"+formId).serialize();
+					$.post(url, formData)
+					.done(function( data ) {
 						alert( "Data Loaded: " + data );
+					});
+				},
+                /**
+				 * update
+				 * Post to server to create new data
+				 * @param	
+				 */
+				update: function(formId, url) {
+					var formData = $("#"+formId).serialize();
+					$.post(url, formData)
+					.done(function( data ) {
+						alert( "Data Updated: " + data );
+					});
+				},
+                /**
+				 * delete
+				 * Post to server to create new data
+				 * @param	
+				 */
+				delete: function(formId, url) {
+					var formData = $("#"+formId).serialize();
+					$.post(url, formData)
+					.done(function( data ) {
+						alert( "Data Deleted: " + data );
 					});
 				}
 			}
