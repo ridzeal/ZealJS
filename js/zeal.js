@@ -50,11 +50,98 @@ function Zeal() {
 			}
 		}
 	};
+    
+    /**
+	 * ZealJS Error Trap
+	 */
+	this.error = {
+        /**
+         * throw
+         * Throw Error Message
+         */
+        'throw': function(msg) {
+            if (console) {
+                console.log(msg);
+            } else {
+                alert(msg);
+            }
+        },
+        
+        /**
+         * Error Library
+         */
+        101: function(id) { // Element not found
+            zeal.error.throw("Element with ID: ["+id+"] not found");
+        }
+    };
 	
 	/**
 	 * ZealJS Generator Module
 	 */
 	this.gen = {
+        /** Sub-Module Grid */
+		grid: {
+            /**
+             * core
+             * Core Function for creating Grid
+             * @param   id          string          ID of Grid
+             * @param   targetCont  string          ID of Container Grid will be generated
+             * @param   cols        array           Grid Columns
+             * @param   data        array of object Data
+             * @param   config      array / object  Optional Configuration
+             */
+            core: function(id, targetCont, cols, data, config) {
+                var cont = $("#"+targetCont),
+                    divGrid = $("<div></div>"), // Grid Container
+                    divHead = $("<div></div>"), // Grid Header
+                    divCont = $("<div></div>"), // Grid Content
+                    divFoot = $("<div></div>"); // Grid Footer
+                
+                // Default Config
+                if (typeof config == 'undefined') {
+                    config = {
+                        paging: true // Paging Shown by default
+                    };
+                }
+                
+                // Container Validation
+                if (!cont.length) {
+                    zeal.error['101'](targetCont);
+                }
+                
+                /** Prepare Grid */
+                divGrid.attr('id',id);
+                divGrid.addClass("z-grid");
+                
+                /** Create Header */
+                divHead.attr('id',id+'_header');
+                divHead.addClass("z-grid-header");
+                for(i in cols) {
+                    var tmpCol = $("<div></div>");
+                    tmpCol.attr('id',id+'_header_'+i);
+                    tmpCol.html(cols[i]);
+                    
+                    divHead.append(tmpCol);
+                }
+                
+                /** Create Content */
+                divCont.attr('id',id+'_content');
+                divCont.addClass("z-grid-content");
+                
+                /** Create Footer */
+                divFoot.attr('id',id+'_footer');
+                divFoot.addClass("z-grid-footer");
+                
+                /** Combine to Grid */
+                divGrid.append(divHead);
+                divGrid.append(divCont);
+                divGrid.append(divFoot);
+                
+                /** Replace target Container content with grid */
+                cont.html(divGrid);
+            }
+        },
+        
 		/** Sub-Module Table */
 		table: {
 			/**
